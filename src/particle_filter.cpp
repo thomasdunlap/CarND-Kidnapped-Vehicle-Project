@@ -20,10 +20,10 @@
 using namespace std;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
-	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of
+	// Set the number of particles. Initialize all particles to first position (based on estimates of
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1.
 	// Add random Gaussian noise to each particle.
-	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
+	// Consult particle_filter.h for more information about this method (and others in this file).
 
 	// Can adjust number of particles.
 	num_particles = 25;
@@ -51,8 +51,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
-	// TODO: Add measurements to each particle and add random Gaussian noise.
-	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
+	//  Add measurements to each particle and add random Gaussian noise.
+	//  When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
@@ -96,6 +96,31 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
 	//   implement this method and use it as a helper during the updateWeights phase.
 
+	// Observations may be less than landmarks because of limits of sensor range
+	for (int i = 0; i < observations.size; i++) {
+		// Sensor range
+		double lowest_dist = sensor_range * sqrt(2);
+		int closest_landmark_id = -1;
+
+		// Observed position
+		double obs_x = observations[i].x;
+		double obs_y = observations[i].y;
+
+		// Predicted position
+		for (int j = 0; j < predicted.size(); j++) {
+			double pred_x = predicted[j].x;
+			double pred_y = predicted[j].y;
+			int pred_id = predicted[j].id;
+			double current_dist = dist(obs_x, obs_y, pred_x, pred_y);
+
+			// If out of range
+			if (current_dist < lowest_dist) {
+				lowest_dist = current_dist;
+				closest_landmark_id = pred_id;
+			}
+		}
+		observations[i].id = closest_landmark_id;
+	}
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
