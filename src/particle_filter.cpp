@@ -160,6 +160,37 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
         predicted_landmarks.push_back(LandmarkObs {current_landmark.id_i, current_landmark.x_f, current_landmark.y_f});
       }
 		}
+
+		// Associate predicted landmarks with observations.
+		dataAssociation(predicted_landmarks, transformed_observations, sensor_range);
+
+		// Restore particle weight
+    particles[i].weight = 1.0;
+
+    double sigma_x = std_landmark[0];
+    double sigma_y = std_landmark[1];
+    double sigma_x_2 = pow(sigma_x, 2);
+    double sigma_y_2 = pow(sigma_y, 2);
+    double normalizer = (1.0 / (2.0 * M_PI * sigma_x * sigma_y));
+
+		// Calculate particle weight with with multivariate Gaussian
+		for (int l = 0; l < transformed_observations.size(); l++) {
+      double trans_obs_x = transformed_observations[l].x;
+      double trans_obs_y = transformed_observations[l].y;
+      double trans_obs_id = transformed_observations[l].id;
+      double multi_prob = 1.0;
+
+      for (int m = 0; m < predicted_landmarks.size(); m++) {
+        double pred_landmark_x = predicted_landmarks[m].x;
+        double pred_landmark_y = predicted_landmarks[m].y;
+        double pred_landmark_id = predicted_landmarks[m].id;
+
+        if (trans_obs_id == pred_landmark_id) {
+          multi_prob = normalizer * exp(-1.0 * ((pow((trans_obs_x - pred_landmark_x), 2)/(2.0 * sigma_x_2)) + (pow((trans_obs_y - pred_landmark_y), 2)/(2.0 * sigma_y_2))));
+          particles[i].weight *= multi_prob;
+        }
+      }
+    }
 	}
 
 
