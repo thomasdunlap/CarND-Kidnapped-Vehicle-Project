@@ -135,6 +135,25 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
+	double weight_normalizer = 0.0;
+
+	for (int i=0; i < num_particles; i++) {
+		double particle_x = particles[i].x;
+		double particle_y = particles[i].y;
+		double particle_theta = particles[i].theta;
+
+		// Transform vehicle observations to map co-coordinates
+		std::vector<LandmarkObs> transformed_observations;
+		for (int j=0; j < observations.size(); j++) {
+			LandmarkObs transformed_obs;
+			transformed_obs.id = j;
+			transformed_obs.x = particle_x + (cos(particle_theta) * observations[j].x) - (sin(particle_theta) * observations[j].y);
+			transformed_obs.y = particle_y + (sin(particle_theta) * observations[j].x) + (cos(particle_theta) * observations[j].y);
+			transformed_observations.push_back(transformed_obs);
+		}
+	}
+
+
 }
 
 void ParticleFilter::resample() {
