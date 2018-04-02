@@ -33,13 +33,13 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   double std_y = std[1];
   double std_theta = std[2];
 
-  std::normal_distribution<double> d_x(0, std_x);
-  std::normal_distribution<double> d_y(y, std_y);
-  std::normal_distribution<double> d_theta(0, std_theta);
+  normal_distribution<double> d_x(0, std_x);
+  normal_distribution<double> d_y(y, std_y);
+  normal_distribution<double> d_theta(0, std_theta);
 
   for (int i = 0; i < num_particles; i++) {
 
-    // create a particle
+    // Define Particle object's attributes
     Particle p;
     p.id = i;
     p.x = x + d_x(gen);
@@ -66,15 +66,15 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
-  auto start = std::chrono::high_resolution_clock::now();
+  auto start = chrono::high_resolution_clock::now();
 
   double std_x = std_pos[0];
   double std_y = std_pos[1];
   double std_theta = std_pos[2];
 
-  std::normal_distribution<double> d_x(0, std_x);
-  std::normal_distribution<double> d_y(0, std_y);
-  std::normal_distribution<double> d_theta(0, std_theta);
+  normal_distribution<double> d_x(0, std_x);
+  normal_distribution<double> d_y(0, std_y);
+  normal_distribution<double> d_theta(0, std_theta);
 
   double eps = 0.0001;
 
@@ -93,15 +93,15 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   }
 
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsed_time = finish - start;
+  auto finish = chrono::high_resolution_clock::now();
+  chrono::duration<double> elapsed_time = finish - start;
 
   cout << "Prediction. Elapsed time: " << elapsed_time.count() << endl;
 
 }
 
-void ParticleFilter::dataAssociation(std::vector<LandmarkObs>& predicted,
-                                     std::vector<LandmarkObs>& observations,
+void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
+                                     vector<LandmarkObs>& observations,
                                      Particle& particle) {
 
   // Find the predicted measurement that is closest to each observed measurement and assign the
@@ -109,13 +109,13 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs>& predicted,
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
 	// implement this method and use it as a helper during the updateWeights phase.
 
-  auto start = std::chrono::high_resolution_clock::now();
-  std::vector<std::pair<double, double>> temp_x;
-  std::vector<std::pair<double, double>> temp_y;
-  std::vector<int> assosiations;
+  auto start = chrono::high_resolution_clock::now();
+  vector<pair<double, double>> temp_x;
+  vector<pair<double, double>> temp_y;
+  vector<int> assosiations;
 
   for (auto& observation : observations) {
-    double min_dist = std::numeric_limits<double>::max(); // initialise with "infinity"
+    double min_dist = numeric_limits<double>::max(); // initialise with "infinity"
     // find closest landmark
     LandmarkObs closest_lmrk{0, 0.0, 0.0};
     for (auto& landmark : predicted) {
@@ -134,15 +134,15 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs>& predicted,
   particle.sense_y = temp_y;
   particle.associations = assosiations;
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(finish - start) ;
+  auto finish = chrono::high_resolution_clock::now();
+  chrono::duration<double> time_span = chrono::duration_cast<chrono::duration<double>>(finish - start) ;
   // Debug
   //std::cout << "dataAssosiation Time elapsed: " << time_span.count() << std::endl;
   //std::cout << "Observations size: " << observations.size() << " Landmarks size: " << predicted.size() << std::endl;
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
-		const std::vector<LandmarkObs> &observations, const Map &map_landmarks) {
+		const vector<LandmarkObs> &observations, const Map &map_landmarks) {
   // Update the weights of each particle using a mult-variate Gaussian distribution. You can read
 	//   more about this distribution here: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 	// NOTE: The observations are given in the VEHICLE'S coordinate system. Your particles are located
@@ -154,7 +154,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
 
-  auto start = std::chrono::high_resolution_clock::now();
+  auto start = chrono::high_resolution_clock::now();
 
   //std::cout << "Observations size: " << observations.size() << std::endl;
   //std::cout << "Map landmarks size: " << map_landmarks.landmark_list.size() << std::endl;
@@ -166,7 +166,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // Step 1:
     // create a vector of observations converted to a global reference frame
     // and transform them to map coordinates:
-    std::vector<LandmarkObs> map_observations;
+    vector<LandmarkObs> map_observations;
     for (auto& observation : observations) {
       double theta = particle.theta;
       LandmarkObs map_observation{0,0.0,0.0};
@@ -178,7 +178,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // Step 2:
     // for a given particle create a vector of landmarks within a range of our sensor
     // and if the landmark is within the sensor range we add it to a landmarks vector
-    std::vector<LandmarkObs> landmarks;
+    vector<LandmarkObs> landmarks;
     for (auto& map_landmark : map_landmarks.landmark_list) {
       LandmarkObs landmark{map_landmark.id_i, map_landmark.x_f, map_landmark.y_f};
       if (dist(particle.x, particle.y, landmark.x, landmark.y) < sensor_range) {
@@ -222,18 +222,18 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     weights[i] = particles[i].weight;
   }
 
-  auto finish = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> time_span = finish - start;
-  std::cout << "Weights update time elapsed: " << time_span.count() << std::endl;
+  auto finish = chrono::high_resolution_clock::now();
+  chrono::duration<double> time_span = finish - start;
+  cout << "Weights update time elapsed: " << time_span.count() << endl;
 }
 
 void ParticleFilter::resample() {
-	// TODO: done
+
   // Resample particles with replacement with probability proportional to their weight.
 	// NOTE: You may find std::discrete_distribution helpful here.
 	// http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
-  std::discrete_distribution<int> d(weights.begin(), weights.end());
+  discrete_distribution<int> d(weights.begin(), weights.end());
   //auto temp = particles;
   for (auto& particle : particles) {
     particle = particles[d(gen)];
@@ -241,8 +241,8 @@ void ParticleFilter::resample() {
   call_number += 1;
 }
 
-Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<int>& associations,
-                                     const std::vector<double>& sense_x, const std::vector<double>& sense_y)
+Particle ParticleFilter::SetAssociations(Particle& particle, const vector<int>& associations,
+                                     const vector<double>& sense_x, const vector<double>& sense_y)
 {
     //particle: the particle to assign each listed association, and association's (x,y) world coordinates mapping to
     // associations: The landmark id that goes along with each listed association
@@ -265,7 +265,7 @@ string ParticleFilter::getAssociations(Particle best)
 }
 string ParticleFilter::getSenseX(Particle best)
 {
-	vector<std::pair<double, double>> v_full = best.sense_x;
+	vector<pair<double, double>> v_full = best.sense_x;
   vector<double> v;
   for (auto& vi : v_full) {
     v.push_back(vi.first);
@@ -278,7 +278,7 @@ string ParticleFilter::getSenseX(Particle best)
 }
 string ParticleFilter::getSenseY(Particle best)
 {
-  vector<std::pair<double, double>> v_full = best.sense_y;
+  vector<pair<double, double>> v_full = best.sense_y;
   vector<double> v;
   for (auto& vi : v_full) {
     v.push_back(vi.first);
