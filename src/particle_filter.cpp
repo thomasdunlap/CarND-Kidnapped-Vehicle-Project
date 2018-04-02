@@ -21,20 +21,20 @@
 using namespace std;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
-	// TODO: done
+
   // Set the number of particles. Initialize all particles to first position (based on estimates of
 	// x, y, theta and their uncertainties from GPS) and all weights to 1.
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 
-  num_particles = 100;
+  num_particles = 50;
 
   double std_x = std[0];
   double std_y = std[1];
   double std_theta = std[2];
 
   std::normal_distribution<double> d_x(0, std_x);
-  std::normal_distribution<double> d_y(0, std_y);
+  std::normal_distribution<double> d_y(y, std_y);
   std::normal_distribution<double> d_theta(0, std_theta);
 
   for (int i = 0; i < num_particles; i++) {
@@ -103,7 +103,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs>& predicted,
                                      std::vector<LandmarkObs>& observations,
                                      Particle& particle) {
-	// TODO: done (linear search)
+
   // Find the predicted measurement that is closest to each observed measurement and assign the
 	// observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
@@ -143,7 +143,6 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs>& predicted,
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		const std::vector<LandmarkObs> &observations, const Map &map_landmarks) {
-  // TODO: done
   // Update the weights of each particle using a mult-variate Gaussian distribution. You can read
 	//   more about this distribution here: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 	// NOTE: The observations are given in the VEHICLE'S coordinate system. Your particles are located
