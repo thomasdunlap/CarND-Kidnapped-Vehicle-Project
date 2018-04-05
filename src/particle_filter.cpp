@@ -100,7 +100,7 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
 
   for (auto& observation : observations) {
     double min_dist = numeric_limits<double>::max(); // initialise with "infinity"
-    // find closest landmark
+    // Closest landmark
     LandmarkObs closest_lmrk{0, 0.0, 0.0};
     for (auto& landmark : predicted) {
       double distance = dist(observation.x, observation.y, landmark.x, landmark.y);
@@ -114,6 +114,7 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
     associations.push_back(closest_lmrk.id);
   }
 
+  // Update measured values
   particle.sense_x = temp_x;
   particle.sense_y = temp_y;
   particle.associations = associations;
@@ -217,6 +218,8 @@ Particle ParticleFilter::SetAssociations(Particle& particle, const vector<int>& 
     // associations: The landmark id that goes along with each listed association
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
+
+}
 
 string ParticleFilter::getAssociations(Particle best)
 {
