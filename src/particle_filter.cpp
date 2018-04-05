@@ -134,8 +134,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
 
-  double sum_of_weights = 0.0;
-
   for (auto& particle : particles) {
 
     // Step 1:
@@ -143,10 +141,10 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // and transform them to map coordinates:
     vector<LandmarkObs> map_observations;
     for (auto& observation : observations) {
-      double theta = particle.theta;
-      LandmarkObs map_observation{0,0.0,0.0};
-      map_observation.x = particle.x + observation.x * cos(theta) - observation.y * sin(theta);
-      map_observation.y = particle.y + observation.y * cos(theta) + observation.x * sin(theta);
+      
+      LandmarkObs map_observation{0, 0.0, 0.0};
+      map_observation.x = particle.x + observation.x * cos(particle.theta) - observation.y * sin(particle.theta);
+      map_observation.y = particle.y + observation.y * cos(particle.theta) + observation.x * sin(particle.theta);
       map_observations.push_back(map_observation);
     }
 
@@ -172,7 +170,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     particle.weight = 1.0;
 
-    double C =  1.0/(2.0*M_PI*std_x*std_y);
+    double C =  1.0 / (2.0*M_PI * std_x*std_y);
 
     for (int i=0; i < particle.sense_x.size(); ++i) {
       double obs_x = particle.sense_x[i].first;
@@ -185,7 +183,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       particle.weight *= C * exp(exp_term);
     }
 
-    sum_of_weights += particle.weight;
   }
 
   // Step 5:
