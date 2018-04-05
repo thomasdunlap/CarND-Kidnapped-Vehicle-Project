@@ -96,7 +96,7 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
 
   vector<pair<double, double>> temp_x;
   vector<pair<double, double>> temp_y;
-  vector<int> assosiations;
+  vector<int> associations;
 
   for (auto& observation : observations) {
     double min_dist = numeric_limits<double>::max(); // initialise with "infinity"
@@ -111,12 +111,12 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
     }
     temp_x.emplace_back(observation.x, closest_lmrk.x);
     temp_y.emplace_back(observation.y, closest_lmrk.y);
-    assosiations.push_back(closest_lmrk.id);
+    associations.push_back(closest_lmrk.id);
   }
 
   particle.sense_x = temp_x;
   particle.sense_y = temp_y;
-  particle.associations = assosiations;
+  particle.associations = associations;
 
 }
 
