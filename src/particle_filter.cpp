@@ -14,7 +14,6 @@
 #include <sstream>
 #include <string>
 #include <iterator>
-#include <chrono>
 
 #include "particle_filter.h"
 
@@ -55,8 +54,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   }
 
   is_initialized = true;
-
-  cout << "Initialisation..." << endl;
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
@@ -65,8 +62,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
-
-  auto start = chrono::high_resolution_clock::now();
 
   double std_x = std_pos[0];
   double std_y = std_pos[1];
@@ -92,12 +87,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
     particle.theta = theta + yaw_rate*delta_t + d_theta(gen);
   }
 
-
-  auto finish = chrono::high_resolution_clock::now();
-  chrono::duration<double> elapsed_time = finish - start;
-
-  cout << "Prediction. Elapsed time: " << elapsed_time.count() << endl;
-
 }
 
 void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
@@ -109,7 +98,6 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
 	// implement this method and use it as a helper during the updateWeights phase.
 
-  auto start = chrono::high_resolution_clock::now();
   vector<pair<double, double>> temp_x;
   vector<pair<double, double>> temp_y;
   vector<int> assosiations;
@@ -134,11 +122,6 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
   particle.sense_y = temp_y;
   particle.associations = assosiations;
 
-  auto finish = chrono::high_resolution_clock::now();
-  chrono::duration<double> time_span = chrono::duration_cast<chrono::duration<double>>(finish - start) ;
-  // Debug
-  //std::cout << "dataAssosiation Time elapsed: " << time_span.count() << std::endl;
-  //std::cout << "Observations size: " << observations.size() << " Landmarks size: " << predicted.size() << std::endl;
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
@@ -153,11 +136,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
-
-  auto start = chrono::high_resolution_clock::now();
-
-  //std::cout << "Observations size: " << observations.size() << std::endl;
-  //std::cout << "Map landmarks size: " << map_landmarks.landmark_list.size() << std::endl;
 
   double sum_of_weights = 0.0;
 
@@ -215,16 +193,11 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
   // Step 5:
   // update weights and normalise them
-  //for (auto& particle : particles) {
-  //  particle.weight /= sum_of_weights;
-  //}
+
   for (int i=0; i < num_particles; i++) {
     weights[i] = particles[i].weight;
   }
 
-  auto finish = chrono::high_resolution_clock::now();
-  chrono::duration<double> time_span = finish - start;
-  cout << "Weights update time elapsed: " << time_span.count() << endl;
 }
 
 void ParticleFilter::resample() {
@@ -234,7 +207,7 @@ void ParticleFilter::resample() {
 	// http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
   discrete_distribution<int> d(weights.begin(), weights.end());
-  //auto temp = particles;
+
   for (auto& particle : particles) {
     particle = particles[d(gen)];
   }
@@ -260,7 +233,7 @@ string ParticleFilter::getAssociations(Particle best)
 	stringstream ss;
     copy( v.begin(), v.end(), ostream_iterator<int>(ss, " "));
     string s = ss.str();
-    s = s.substr(0, s.length()-1);  // get rid of the trailing space
+    s = s.substr(0, s.length() - 1);  // get rid of the trailing space
     return s;
 }
 string ParticleFilter::getSenseX(Particle best)
@@ -273,7 +246,7 @@ string ParticleFilter::getSenseX(Particle best)
 	stringstream ss;
     copy( v.begin(), v.end(), ostream_iterator<float>(ss, " "));
     string s = ss.str();
-    s = s.substr(0, s.length()-1);  // get rid of the trailing space
+    s = s.substr(0, s.length() - 1);  // get rid of the trailing space
     return s;
 }
 string ParticleFilter::getSenseY(Particle best)
@@ -286,7 +259,7 @@ string ParticleFilter::getSenseY(Particle best)
   stringstream ss;
     copy( v.begin(), v.end(), ostream_iterator<float>(ss, " "));
     string s = ss.str();
-    s = s.substr(0, s.length()-1);  // get rid of the trailing space
+    s = s.substr(0, s.length() - 1);  // get rid of the trailing space
     return s;
 }
 
