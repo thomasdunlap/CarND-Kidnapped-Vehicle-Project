@@ -46,10 +46,10 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     p.theta = theta + d_theta(gen);
     p.weight = 1.0;
 
-    // add a particle to a vector of particles
+    // Append particle to particles vector
     particles.push_back(p);
 
-    // initialise vector of weights
+    // Append p weight to weight vector
     weights.push_back(p.weight);
   }
 
@@ -57,7 +57,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
-	// TODO: done
   // Add measurements to each particle and add random Gaussian noise.
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
@@ -71,20 +70,18 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   normal_distribution<double> d_y(0, std_y);
   normal_distribution<double> d_theta(0, std_theta);
 
-  double eps = 0.0001;
-
   for (auto& particle : particles) {
-    double theta = particle.theta;
-    // process the case of small yaw rate
-    if (yaw_rate < eps) {
-      particle.x += velocity*cos(theta)*delta_t + d_x(gen);
-      particle.y += velocity*sin(theta)*delta_t + d_y(gen);
+    //double theta = particle.theta;
+    // Normalize for yaw_rate approaching zero
+    if (yaw_rate < .001) {
+      particle.x += velocity * cos(particle.theta)*delta_t + d_x(gen);
+      particle.y += velocity * sin(particle.theta)*delta_t + d_y(gen);
     } else {
-      particle.x += velocity/yaw_rate*(sin(theta + yaw_rate*delta_t) - sin(theta)) + d_x(gen);
-      particle.y += velocity/yaw_rate*(-cos(theta + yaw_rate*delta_t) + cos(theta)) + d_y(gen);
+      particle.x += velocity/yaw_rate*(sin(particle.theta + yaw_rate*delta_t) - sin(particle.theta)) + d_x(gen);
+      particle.y += velocity/yaw_rate*(-cos(particle.theta + yaw_rate*delta_t) + cos(particle.theta)) + d_y(gen);
     }
     // (-pi; pi) normalisation
-    particle.theta = theta + yaw_rate*delta_t + d_theta(gen);
+    particle.theta += yaw_rate*delta_t + d_theta(gen);
   }
 
 }
