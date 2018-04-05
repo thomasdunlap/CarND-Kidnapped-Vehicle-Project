@@ -71,7 +71,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   normal_distribution<double> d_theta(0, std_theta);
 
   for (auto& particle : particles) {
-    //double theta = particle.theta;
     // Normalize for yaw_rate approaching zero
     if (yaw_rate < .001) {
       particle.x += velocity * cos(particle.theta)*delta_t + d_x(gen);
@@ -218,11 +217,6 @@ Particle ParticleFilter::SetAssociations(Particle& particle, const vector<int>& 
     // associations: The landmark id that goes along with each listed association
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
-
-    //particle.associations= associations;
-    //particle.sense_x = sense_x;
-    //particle.sense_y = sense_y;
-}
 
 string ParticleFilter::getAssociations(Particle best)
 {
