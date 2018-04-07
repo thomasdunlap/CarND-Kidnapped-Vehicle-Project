@@ -141,14 +141,14 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // and transform them to map coordinates:
     vector<LandmarkObs> map_observations;
     for (auto& observation : observations) {
-      
+
       LandmarkObs map_observation{0, 0.0, 0.0};
       map_observation.x = particle.x + observation.x * cos(particle.theta) - observation.y * sin(particle.theta);
       map_observation.y = particle.y + observation.y * cos(particle.theta) + observation.x * sin(particle.theta);
       map_observations.push_back(map_observation);
     }
 
-    // Step 2:
+    
     // for a given particle create a vector of landmarks within a range of our sensor
     // and if the landmark is within the sensor range we add it to a landmarks vector
     vector<LandmarkObs> landmarks;
@@ -159,12 +159,11 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       }
     }
 
-    // Step 3:
-    // Create associations between landmarks and measurements converted to a global reference frame
+    // Associations between landmarks and measurements
     dataAssociation(landmarks, map_observations, particle);
 
-    // Step 4:
-    // Assign weight to a given particle
+
+    // Assign weights to particles
     double std_x = std_landmark[0];
     double std_y = std_landmark[1];
 
@@ -178,15 +177,14 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       double obs_y = particle.sense_y[i].first;
       double lmrk_y = particle.sense_y[i].second;
 
-      double exp_term = -(obs_x-lmrk_x)*(obs_x-lmrk_x)/(2*std_x*std_x) - (obs_y-lmrk_y)*(obs_y-lmrk_y)/(2*std_y*std_y);
+      double exp_term = -(obs_x-lmrk_x) * (obs_x-lmrk_x)/(2*std_x*std_x) - (obs_y-lmrk_y)*(obs_y-lmrk_y)/(2*std_y*std_y);
 
       particle.weight *= C * exp(exp_term);
     }
 
   }
 
-  // Step 5:
-  // update weights and normalise them
+  // Update weights
 
   for (int i=0; i < num_particles; i++) {
     weights[i] = particles[i].weight;
