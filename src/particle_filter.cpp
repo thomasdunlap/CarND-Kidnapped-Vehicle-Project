@@ -79,7 +79,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
       particle.x += velocity/yaw_rate*(sin(particle.theta + yaw_rate*delta_t) - sin(particle.theta)) + d_x(gen);
       particle.y += velocity/yaw_rate*(-cos(particle.theta + yaw_rate*delta_t) + cos(particle.theta)) + d_y(gen);
     }
-    // (-pi; pi) normalisation
+    // Normalize between pi and -pi
     particle.theta += yaw_rate*delta_t + d_theta(gen);
   }
 
@@ -148,7 +148,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       map_observations.push_back(map_observation);
     }
 
-    
+
     // for a given particle create a vector of landmarks within a range of our sensor
     // and if the landmark is within the sensor range we add it to a landmarks vector
     vector<LandmarkObs> landmarks;
