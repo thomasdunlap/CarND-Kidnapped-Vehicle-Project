@@ -32,9 +32,9 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   double std_y = std[1];
   double std_theta = std[2];
 
-  normal_distribution<double> d_x(0, std_x);
-  normal_distribution<double> d_y(y, std_y);
-  normal_distribution<double> d_theta(0, std_theta);
+  normal_distribution<double> d_x(0, std[0]);
+  normal_distribution<double> d_y(y, std[1]);
+  normal_distribution<double> d_theta(0, std[2]);
 
   for (int i = 0; i < num_particles; i++) {
 
@@ -66,9 +66,9 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   double std_y = std_pos[1];
   double std_theta = std_pos[2];
 
-  normal_distribution<double> d_x(0, std_x);
-  normal_distribution<double> d_y(0, std_y);
-  normal_distribution<double> d_theta(0, std_theta);
+  normal_distribution<double> d_x(0, std_pos[0]);
+  normal_distribution<double> d_y(0, std_pos[1]);
+  normal_distribution<double> d_theta(0, std_pos[2]);
 
   for (auto& particle : particles) {
     // Normalize for yaw_rate approaching zero
@@ -112,12 +112,10 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
     temp_x.emplace_back(observation.x, closest_lmrk.x);
     temp_y.emplace_back(observation.y, closest_lmrk.y);
     associations.push_back(closest_lmrk.id);
+
   }
 
-  // Update measured values
-  particle.sense_x = temp_x;
-  particle.sense_y = temp_y;
-  particle.associations = associations;
+  SetAssociations(particle, associations, temp_x, temp_y);
 
 }
 
@@ -185,7 +183,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   }
 
   // Update weights
-
   for (int i=0; i < num_particles; i++) {
     weights[i] = particles[i].weight;
   }
@@ -207,13 +204,18 @@ void ParticleFilter::resample() {
 }
 
 Particle ParticleFilter::SetAssociations(Particle& particle, const vector<int>& associations,
-                                     const vector<double>& sense_x, const vector<double>& sense_y)
+                                     const vector<pair<double, double>>& sense_x, const vector<pair<double, double>>& sense_y)
 {
     //particle: the particle to assign each listed association, and association's (x,y) world coordinates mapping to
     // associations: The landmark id that goes along with each listed association
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
 
+	particle.associations= associations;
+ 	particle.sense_x = sense_x;
+ 	particle.sense_y = sense_y;
+
+ 	return particle;
 }
 
 string ParticleFilter::getAssociations(Particle best)
@@ -225,11 +227,13 @@ string ParticleFilter::getAssociations(Particle best)
     s = s.substr(0, s.length() - 1);  // get rid of the trailing space
     return s;
 }
+
+
 string ParticleFilter::getSenseX(Particle best)
 {
-	vector<pair<double, double>> v_full = best.sense_x;
+
   vector<double> v;
-  for (auto& vi : v_full) {
+  for (auto& vi : best.sense_x) {
     v.push_back(vi.first);
   }
 	stringstream ss;
@@ -238,11 +242,11 @@ string ParticleFilter::getSenseX(Particle best)
     s = s.substr(0, s.length() - 1);  // get rid of the trailing space
     return s;
 }
+
 string ParticleFilter::getSenseY(Particle best)
 {
-  vector<pair<double, double>> v_full = best.sense_y;
   vector<double> v;
-  for (auto& vi : v_full) {
+  for (auto& vi : best.sense_y) {
     v.push_back(vi.first);
   }
   stringstream ss;
