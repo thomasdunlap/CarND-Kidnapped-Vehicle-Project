@@ -62,14 +62,11 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
-  double std_x = std_pos[0];
-  double std_y = std_pos[1];
-  double std_theta = std_pos[2];
-
   normal_distribution<double> d_x(0, std_pos[0]);
   normal_distribution<double> d_y(0, std_pos[1]);
   normal_distribution<double> d_theta(0, std_pos[2]);
 
+  // Like Python's `for x in container:`
   for (auto& particle : particles) {
     // Normalize for yaw_rate approaching zero
     if (yaw_rate < .001) {
@@ -79,7 +76,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
       particle.x += velocity/yaw_rate*(sin(particle.theta + yaw_rate*delta_t) - sin(particle.theta)) + d_x(gen);
       particle.y += velocity/yaw_rate*(-cos(particle.theta + yaw_rate*delta_t) + cos(particle.theta)) + d_y(gen);
     }
-    // Normalize between pi and -pi
+    // Normalize theta out of range
     particle.theta += yaw_rate*delta_t + d_theta(gen);
   }
 
@@ -94,8 +91,9 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
 	// implement this method and use it as a helper during the updateWeights phase.
 
-  vector<pair<double, double>> temp_x;
-  vector<pair<double, double>> temp_y;
+  // Pair vectors for easy obs, actual storage
+  vector<pair<double, double>> sense_x;
+  vector<pair<double, double>> sense_y;
   vector<int> associations;
 
   for (auto& observation : observations) {
@@ -109,13 +107,14 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs>& predicted,
         closest_lmrk = landmark;
       }
     }
-    temp_x.emplace_back(observation.x, closest_lmrk.x);
-    temp_y.emplace_back(observation.y, closest_lmrk.y);
+    // emplace_back because push_back T doesn't work with pair vectors
+    sense_x.emplace_back(observation.x, closest_lmrk.x);
+    sense_y.emplace_back(observation.y, closest_lmrk.y);
     associations.push_back(closest_lmrk.id);
 
   }
-
-  SetAssociations(particle, associations, temp_x, temp_y);
+  // Setter for sense_x
+  SetAssociations(particle, associations, sense_x, sense_y);
 
 }
 
@@ -160,28 +159,21 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // Associations between landmarks and measurements
     dataAssociation(landmarks, map_observations, particle);
 
-
-    // Assign weights to particles
-    double std_x = std_landmark[0];
-    double std_y = std_landmark[1];
-
     particle.weight = 1.0;
 
-    double C =  1.0 / (2.0*M_PI * std_x*std_y);
+    double C =  1.0 / (2.0*M_PI * std_landmark[0]*std_landmark[1]);
 
     for (int i=0; i < particle.sense_x.size(); ++i) {
-      double obs_x = particle.sense_x[i].first;
-      double lmrk_x = particle.sense_x[i].second;
-      double obs_y = particle.sense_y[i].first;
-      double lmrk_y = particle.sense_y[i].second;
 
-      double exp_term = -(obs_x-lmrk_x) * (obs_x-lmrk_x)/(2*std_x*std_x) - (obs_y-lmrk_y)*(obs_y-lmrk_y)/(2*std_y*std_y);
+      double x_2 = (particle.sense_x[i].first - particle.sense_x[i].second) * (particle.sense_x[i].first - particle.sense_x[i].second);
+      double y_2 = (particle.sense_y[i].first - particle.sense_y[i].second) * (particle.sense_y[i].first - particle.sense_y[i].second);
 
-      particle.weight *= C * exp(exp_term);
+      double ex = -x_2/(2 * std_landmark[0]*std_landmark[0]) - y_2/(2 * std_landmark[1]*std_landmark[1]);
+
+      particle.weight *= C * exp(ex);
     }
 
   }
-
   // Update weights
   for (int i=0; i < num_particles; i++) {
     weights[i] = particles[i].weight;
@@ -200,7 +192,6 @@ void ParticleFilter::resample() {
   for (auto& particle : particles) {
     particle = particles[d(gen)];
   }
-  call_number += 1;
 }
 
 Particle ParticleFilter::SetAssociations(Particle& particle, const vector<int>& associations,
@@ -236,6 +227,7 @@ string ParticleFilter::getSenseX(Particle best)
   for (auto& vi : best.sense_x) {
     v.push_back(vi.first);
   }
+
 	stringstream ss;
     copy( v.begin(), v.end(), ostream_iterator<float>(ss, " "));
     string s = ss.str();
@@ -249,6 +241,7 @@ string ParticleFilter::getSenseY(Particle best)
   for (auto& vi : best.sense_y) {
     v.push_back(vi.first);
   }
+
   stringstream ss;
     copy( v.begin(), v.end(), ostream_iterator<float>(ss, " "));
     string s = ss.str();

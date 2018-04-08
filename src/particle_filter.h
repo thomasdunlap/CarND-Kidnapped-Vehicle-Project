@@ -23,21 +23,14 @@
  	std::vector<int> associations;
  	std::vector<std::pair<double, double>> sense_x;
  	std::vector<std::pair<double, double>> sense_y;
-  //std::vector<double> sense_x;
-  //std::vector<double> sense_y;
  };
 
 
 
  class ParticleFilter {
 
-   // debug variable showing how many calls passed
-   long long call_number;
-
  	// Number of particles to draw
  	int num_particles;
-
-   	std::default_random_engine gen;
 
  	// Flag, if filter is initialized
  	bool is_initialized;
@@ -45,16 +38,17 @@
  	// Vector of weights of all particles
  	std::vector<double> weights;
 
- public:
+  // So I don't have to initialise numerous times
+  std::default_random_engine gen;
 
-   long long callNum();
+ public:
 
  	// Set of current particles
  	std::vector<Particle> particles;
 
  	// Constructor
  	// @param num_particles Number of particles
- 	ParticleFilter() : num_particles(0), is_initialized(false), call_number(0) {}
+ 	ParticleFilter() : num_particles(0), is_initialized(false) {}
 
  	// Destructor
  	~ParticleFilter() {}
